@@ -1,0 +1,41 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+Vagrant.configure("2") do |config|
+
+  config.vm.box = "centos/7"
+  config.disksize.size = '20GB'
+
+  # config.vm.box_check_update = false
+
+  ### 任意のポート開放
+  config.vm.network "forwarded_port", guest: 80, host: 8080
+  config.vm.network "forwarded_port", guest: 443, host: 443
+
+  # config.vm.network "forwarded_port", guest: 80, host: 8080, host_ip: "127.0.0.1"
+
+  ### VMのプライベートIP
+  config.vm.network "private_network", ip: "192.168.33.10"
+
+  # config.vm.network "public_network"
+
+  ### 同期させたいフォルダ
+  # config.vm.synced_folder "../data", "/vagrant_data"
+
+  config.vm.provider "virtualbox" do |vb|
+    vb.memory = "2048"
+  end
+
+  ### 初回作成時のみ実行するコマンド群
+  config.vm.provision "shell", inline: <<-SHELL
+    curl -fsSL https://get.docker.com/ | sh
+    sudo curl -L https://github.com/docker/compose/releases/download/1.19.0/docker-compose-`uname -s`-`uname -m` -o /usr/local/bin/docker-compose
+    sudo chmod +x /usr/local/bin/docker-compose
+  SHELL
+
+  ### 毎回起動時に実行するコマンド群
+  config.vm.provision "shell", run: "always", inline: <<-SHELL
+    ls -la
+  SHELL
+
+end
